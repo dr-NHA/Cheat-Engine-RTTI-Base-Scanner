@@ -1,0 +1,1181 @@
+<?xml version="1.0" encoding="utf-8"?>
+<CheatTable CheatEngineTableVersion="42">
+  <CheatEntries>
+    <CheatEntry>
+      <ID>2</ID>
+      <Description>"NHA MS Store Game Dumpers"</Description>
+      <Options moHideChildren="1"/>
+      <LastState Value="" Activated="1" RealAddress="00000000"/>
+      <GroupHeader>1</GroupHeader>
+      <CheatEntries>
+        <CheatEntry>
+          <ID>3</ID>
+          <Description>"Find_And_Decypher_Games_XML_And_Get_Launch_Args"</Description>
+          <LastState Activated="1"/>
+          <VariableType>Auto Assembler Script</VariableType>
+          <AssemblerScript>[ENABLE]
+{$lua}
+NHA_CE.Hook3r.Find_And_Decypher_Games_XML_And_Get_Launch_Args();
+[DISABLE]
+</AssemblerScript>
+        </CheatEntry>
+      </CheatEntries>
+    </CheatEntry>
+    <CheatEntry>
+      <ID>885</ID>
+      <Description>"NHA RTTI Dumpers"</Description>
+      <Options moHideChildren="1"/>
+      <LastState Value="" Activated="1" RealAddress="00000000"/>
+      <GroupHeader>1</GroupHeader>
+      <CheatEntries>
+        <CheatEntry>
+          <ID>886</ID>
+          <Description>"RTTI Base Dumper"</Description>
+          <LastState Activated="1"/>
+          <VariableType>Auto Assembler Script</VariableType>
+          <AssemblerScript>[ENABLE]
+{$lua}
+NHA_RTTI.BaseAddressDumper();
+[DISABLE]
+</AssemblerScript>
+        </CheatEntry>
+        <CheatEntry>
+          <ID>887</ID>
+          <Description>"RTTI Base To Path Dumper (Basic Slow Structure Scan) 2"</Description>
+          <LastState/>
+          <VariableType>Auto Assembler Script</VariableType>
+          <AssemblerScript>[ENABLE]
+{$lua}
+NHA_RTTI.BaseToPathDumper(2);
+[DISABLE]
+</AssemblerScript>
+        </CheatEntry>
+        <CheatEntry>
+          <ID>889</ID>
+          <Description>"RTTI Base To Path Dumper (Basic Slow Structure Scan) 3"</Description>
+          <LastState/>
+          <VariableType>Auto Assembler Script</VariableType>
+          <AssemblerScript>[ENABLE]
+{$lua}
+NHA_RTTI.BaseToPathDumper(3);
+[DISABLE]
+</AssemblerScript>
+        </CheatEntry>
+      </CheatEntries>
+    </CheatEntry>
+    <CheatEntry>
+      <ID>888</ID>
+      <Description>"SetupProcessAsHook"</Description>
+      <LastState Activated="1"/>
+      <VariableType>Auto Assembler Script</VariableType>
+      <AssemblerScript>[ENABLE]
+{$lua}
+NHA_CE.SetupProcessAsHook();
+[DISABLE]
+</AssemblerScript>
+    </CheatEntry>
+    <CheatEntry>
+      <ID>890</ID>
+      <Description>"Attach GTA V Process &amp; Setup As Hook"</Description>
+      <LastState Activated="1"/>
+      <VariableType>Auto Assembler Script</VariableType>
+      <AssemblerScript>[ENABLE]
+{$lua}
+NHA_CE.OpenProcess("GTA5.exe");
+[DISABLE]
+</AssemblerScript>
+    </CheatEntry>
+  </CheatEntries>
+  <UserdefinedSymbols>
+    <SymbolEntry>
+      <Name>Game.Executable.Path</Name>
+      <Address>7FFA631E0ACB</Address>
+    </SymbolEntry>
+    <SymbolEntry>
+      <Name>ExePath::ASM</Name>
+      <Address>7FFA631E0ACB</Address>
+    </SymbolEntry>
+    <SymbolEntry>
+      <Name>ExePath::BASE</Name>
+      <Address>7FFA644AADC0</Address>
+    </SymbolEntry>
+    <SymbolEntry>
+      <Name>Game.Executable.Launch</Name>
+      <Address>7FFB3D359580</Address>
+    </SymbolEntry>
+    <SymbolEntry>
+      <Name>ExeLaunch::ASM</Name>
+      <Address>7FFB3D359580</Address>
+    </SymbolEntry>
+    <SymbolEntry>
+      <Name>ExeLaunch::BASE</Name>
+      <Address>7FFB3D3FE110</Address>
+    </SymbolEntry>
+  </UserdefinedSymbols>
+  <LuaScript>--[[
+This Lua Script Can Be Used For Majority Of X64 Games
+Will Work On The Game Engine Specific Dumpers,
+
+Currently Working:
+Launch Arg Dumper, 2X Methods For X64
+Unity Engine Mono Base Dumper For X64 Unity Games
+Unreal Engine GEngine Base Finder For X64 Unreal Engine Games (May Not Work For Older And Some More Unique Games)
+]]
+
+--[[
+NHA's CE LUA Helpful Functions!
+]]
+--The Base CE Table For My Extension Functions
+NHA_CE={};
+ registerLuaFunctionHighlight("NHA_CE");
+
+NHA_CE.IsHook=function(Check);return NHA_CE.HOOK==Check;end;
+ registerLuaFunctionHighlight("NHA_CE");
+
+--[[
+Hook3r Functions
+]]
+--Hooker Table
+NHA_CE.Hook3r={};
+ registerLuaFunctionHighlight("NHA_CE.Hook3r");
+--Allow The Print Function To Work
+NHA_CE.Hook3r.AllowPrints=true;
+ registerLuaFunctionHighlight("NHA_CE.Hook3r.AllowPrints");
+--Print Prefix
+local DB3XX="NHA Hook3r: ";
+NHA_CE.Hook3r.PrintFunction=print;
+--The Hook3r Print Function &lt; For Debugging
+function NHA_CE.Hook3r.Print(str);
+if NHA_CE.Hook3r.AllowPrints then;
+if str=="~@" then;NHA_CE.Hook3r.PrintFunction(" ");else;NHA_CE.Hook3r.PrintFunction(DB3XX..str);end;end;
+end
+ registerLuaFunctionHighlight("NHA_CE.Hook3r.Print");
+
+--[[
+Function To Clear Logs
+]]
+function NHA_CE.Hook3r.ClearLogs()
+GetLuaEngine().MenuItem5.doClick();--Click The Clear Button In The Lua Console/Executor
+end;
+NHA_CE.Hook3r.ClearLogs();
+ registerLuaFunctionHighlight("NHA_CE.Hook3r.ClearLogs");
+
+
+
+--[[Storage For The Process Name We Are Hacking]]
+NHA_CE.HOOK="";
+ registerLuaFunctionHighlight("NHA_CE.HOOK");
+
+--Set The Hook Name Storage To The Current Process
+function NHA_CE.SetupProcessAsHook()
+NHA_CE.HOOK=process;
+end
+ registerLuaFunctionHighlight("NHA_CE.SetupProcessAsHook");
+
+--Open The Process With My Extesions Overtop To Detect The Process Being Opened A Lil Better (Dont Have To Keep Calling To Check If It Was Open)
+function NHA_CE.OpenProcess(strName)
+NHA_CE.HOOK="";--Reset The Hook Variable (Stores Process Name If Attached!)
+if openProcess(strName) then
+NHA_CE.SetupProcessAsHook();
+return true;
+end
+return false;
+end
+ registerLuaFunctionHighlight("NHA_CE.OpenProcess");
+
+
+--Enum Modules From The Open Process
+function NHA_CE.GetModules();return enumModules(getOpenedProcessID() );end
+ registerLuaFunctionHighlight("NHA_CE.GetModules");
+
+--Check If Process Contains A Module
+function NHA_CE.ProcessLoadedModule(modulename);local NHAC=false;
+NHA_CE.DoWithArray(NHA_CE.GetModules(),
+function (Module);if NHAC==false then;if Module.Name==modulename then;NHAC=true;end;end;end);
+return NHAC;end
+ registerLuaFunctionHighlight("NHA_CE.ProcessLoadedModule");
+
+--Print All The Process Modules Info
+function NHA_CE.PrintProcessModulesInfo();
+NHA_CE.Hook3r.Print("Process Modules:");
+NHA_CE.DoWithArray(NHA_CE.GetModules(),
+function (Module);
+print(Module.Name..":  "..NHA_CE.HEX.ConvertFromInt64(Module.Address));
+end);
+end
+ registerLuaFunctionHighlight("NHA_CE.PrintProcessModulesInfo");
+
+
+
+
+
+function NHA_CE.DirectoryExist(fl);return os.execute([[cd "]]..os.getenv("TEMP").."\\"..fl);end
+registerLuaFunctionHighlight("NHA_CE.DirectoryExist");
+
+function NHA_CE.DirectoryCreate(fl);if not NHA_CE.DirectoryExist(fl) then;os.execute("mkdir "..fl);end;end
+registerLuaFunctionHighlight("NHA_CE.DirectoryCreate");
+
+function NHA_CE.FileExist(pth);return os.rename(pth, pth);end
+registerLuaFunctionHighlight("NHA_CE.FileExist");
+
+function NHA_CE.FileDelete(fl);if NHA_CE.FileExist(fl) then;os.remove(fl);end;end
+registerLuaFunctionHighlight("NHA_CE.FileDelete");
+
+function NHA_CE.FileWrite(fl,txt);NHA_CE.FileDelete(fl);local f = io.open(fl, "w+");f:write(txt);f:close();end;
+registerLuaFunctionHighlight("NHA_CE.FileWrite");
+
+--Do A Function With An Array/Table
+function NHA_CE.DoWithArray(t,func);for _NHA, NHA in pairs(t) do;func(NHA);end;end
+ registerLuaFunctionHighlight("NHA_CE.DoWithArray");
+
+--Get An Array's Size (Table's)
+function NHA_CE.GetArraySize(t);local _NHAC = 0;for _NHA, NHA in pairs(t) do;_NHAC=_NHAC+1;end;return _NHAC;end
+ registerLuaFunctionHighlight("NHA_CE.GetArraySize");
+
+--Nop Instructions By Address And Instruction Size
+function NHA_CE.ASM_NOP_Instructions(address,size);for i=0,size-1,1 do;writeByte(address+i,0x90);end;end
+ registerLuaFunctionHighlight("NHA_CE.ASM_NOP_Instructions");
+
+--Open A Game (Only Works With Games Installed From Legit Places (Or Decent Cracks!))
+function NHA_CE.OpenGame(PackageCompany,PackageTitle,PackageSignature, LaunchToken)
+shellExecute("shell:AppsFolder\\"..PackageCompany.."."..PackageTitle.."_"..PackageSignature.."!"..LaunchToken);
+end
+ registerLuaFunctionHighlight("NHA_CE.OpenGame");
+
+--Better Register Symbols
+function NHA_CE.NOffset(offsetclass,offsetname,offset);
+registerSymbol(offset,offset);
+registerSymbol(offsetclass..'.'..offsetname,offset);end
+ registerLuaFunctionHighlight("NHA_CE.NOffset");
+
+
+--Cbuff Scanner For Unity Games
+function NHA_CE.DoScanAndCbuff(MODULE,InstructionName,Signature,offsetName,distancefromtopofinstruction,cbuffoffset0,cbuffoffset1,tn,printnewline)
+local result = nil;
+NHA_CE.Hook3r.Print("Scanning For Instruction: "..InstructionName);
+if MODULE~=nil and MODULE~="" then;result = AOBScanModuleUnique(MODULE,Signature,"*X*C*W");
+else;result = AOBScanUnique(Signature,"*X*C*W");
+end
+if result == nil then;
+if MODULE~=nil and MODULE~="" then
+NHA_CE.Hook3r.Print(InstructionName.."\nCannot Be Found In:\n"..MODULE.."!!!");
+else
+NHA_CE.Hook3r.Print(InstructionName.."\nCannot Be Found!!!");
+end
+NHA_CE.Hook3r.Print("~@");
+return false;else
+registerSymbol(InstructionName,result );
+NHA=getAddress(InstructionName);
+registerSymbol(offsetName.."::ASM",NHA);
+NHA_CE.Hook3r.Print("Instruction Found: "..InstructionName..": "..NHA_CE.HEX.ConvertFromInt64(result));
+NHA_CE.ASM_CBUFF(InstructionName,offsetName,distancefromtopofinstruction,cbuffoffset0,cbuffoffset1,tn);
+if printnewline then;
+NHA_CE.Hook3r.Print("~@");end;
+return true;
+end
+end
+ registerLuaFunctionHighlight("NHA_CE.DoScanAndCbuff");
+
+function NHA_CE.DoUniqueScanAndCbuff(InstructionName,Signature,offsetName,distancefromtopofinstruction,cbuffoffset0,cbuffoffset1,tn,printnewline)
+NHA_CE.Hook3r.Print("Scanning For Instruction: "..InstructionName);
+local result = AOBScanUnique(Signature,"*X*C*W");
+if result == nil then;
+NHA_CE.Hook3r.Print(InstructionName.."\nCannot Be Found!!!");
+NHA_CE.Hook3r.Print("~@");
+return false;else
+registerSymbol(InstructionName,result );
+NHA=getAddress(InstructionName);
+registerSymbol(offsetName.."::ASM",NHA);
+NHA_CE.Hook3r.Print("Instruction Found: "..InstructionName..": "..NHA_CE.HEX.ConvertFromInt64(result));
+NHA_CE.ASM_CBUFF(InstructionName,offsetName,distancefromtopofinstruction,cbuffoffset0,cbuffoffset1,tn);
+if printnewline then;
+NHA_CE.Hook3r.Print("~@");end;
+return true;
+end
+end
+ registerLuaFunctionHighlight("NHA_CE.DoUniqueScanAndCbuff");
+
+function NHA_CE.DoUniqueScan(InstructionName,Signature,RegionBase,RegionEnd,printnewline)
+NHA_CE.Hook3r.Print("Scanning For Instruction: "..InstructionName);
+local ms = createMemScan()
+ms.OnlyOneResult=true;
+ms.firstScan(soExactValue, vtByteArray, nil, Signature, nil, RegionBase, RegionEnd,
+"*X*C*W", nil, nil , true, nil, nil, nil)
+ms.waitTillDone()
+if ms.result==nil then;
+NHA_CE.Hook3r.Print(InstructionName.."\nCannot Be Found!!!");
+NHA_CE.Hook3r.Print("~@");
+ms.destroy()
+return false;else
+registerSymbol(InstructionName.."::ASM",ms.result );
+NHA_CE.Hook3r.Print("Instruction Found: "..InstructionName..": "..NHA_CE.HEX.ConvertFromInt64(ms.result));
+if printnewline then;
+NHA_CE.Hook3r.Print("~@");end;
+ms.destroy()
+return true;
+end
+end
+ registerLuaFunctionHighlight("NHA_CE.DoUniqueScan");
+
+function NHA_CE.DoUniqueScanMultiResult(Signature,RegionBase,RegionEnd,printnewline)
+NHA_CE.Hook3r.Print("Scanning For Signature: \n"..Signature);
+local ms = createMemScan()
+ms.OnlyOneResult=false;
+ms.firstScan(soExactValue, vtByteArray, nil, Signature, nil, RegionBase, RegionEnd,
+"*X*C*W", nil, nil , true, nil, nil, nil)
+ms.waitTillDone()
+local found = createFoundList(ms)
+found.initialize()
+local Values={};
+if found.Count&gt;0 then;
+for ind=0,found.Count,1 do
+Values[#Values+1]=found[ind];
+end
+end
+if printnewline then;NHA_CE.Hook3r.Print("~@");end;
+ms.destroy();
+found.destroy();
+return Values;
+end
+ registerLuaFunctionHighlight("NHA_CE.DoUniqueScanMultiResult");
+
+
+
+
+--Scanner For Offset Instruction Bases
+function NHA_CE.InstructionBaseScan(MODULE,InstructionBaseName,Signature,printnewline)
+NHA_CE.Hook3r.Print("Scanning For Instruction: "..InstructionBaseName);
+local result = AOBScanModuleUnique(MODULE,Signature,"*X*C*W");
+if result == nil then;
+NHA_CE.Hook3r.Print(InstructionBaseName.."\nCannot Be Found In:\n"..MODULE.."!!!");
+NHA_CE.Hook3r.Print("~@");
+return false;else
+registerSymbol(InstructionBaseName,result );
+NHA_CE.Hook3r.Print("Instruction Found: "..InstructionBaseName..": "..NHA_CE.HEX.ConvertFromInt64(result));
+if printnewline then;
+NHA_CE.Hook3r.Print("~@");end;
+return true;
+end;end
+ registerLuaFunctionHighlight("NHA_CE.InstructionBaseScan");
+
+--Scanner For Offset Finder
+function NHA_CE.InstructionBaseAndOffsetsScan(MODULE,InstructionBaseName,Signature,OffsetCluster)
+if NHA_CE.InstructionBaseScan(MODULE,InstructionBaseName,Signature,false) then
+NHA=NHA_CE.HEX.ConvertFromInt64(getAddress(InstructionBaseName));
+NHA_CE.Hook3r.Print("Finding Offsets In: "..InstructionBaseName..": "..NHA);
+local IndexX=0;
+local NAME="";
+local DX=NHA;
+for i,OSX in ipairs(OffsetCluster) do
+NAME="";
+DX=NHA;
+IndexX=0;
+for i,DATA in ipairs(OSX) do
+if IndexX==0 then;NAME=DATA;end
+if IndexX==1 then;DX=DX..DATA;end;IndexX=IndexX+1;
+end
+--showMessage(NAME.." Offset: "..ConvertFromInt64(getAddress(DX)));
+local DBR=readByte(DX);
+local HEXIFIED=NHA_CE.HEX.ConvertFromInt64(DBR);
+registerSymbol(HEXIFIED,HEXIFIED);
+registerSymbol(InstructionBaseName.."::"..NAME,DX);
+registerSymbol(NAME,DBR );
+NHA_CE.Hook3r.Print("Found Offset: "..NAME..": "..HEXIFIED.." | @"..InstructionBaseName.."::"..DX);
+end;
+NHA_CE.Hook3r.Print("~@");
+end;end
+ registerLuaFunctionHighlight("NHA_CE.InstructionBaseAndOffsetsScan");
+
+
+
+--CBUFF From An Address (NOT HEX!) Name
+function NHA_CE.CBUFF(AsmBase,distancefromtopofinstruction,cbuffoffset0,cbuffoffset1)
+local NHA_ASM_Base=AsmBase+distancefromtopofinstruction;
+local C= (NHA_ASM_Base+readInteger(NHA_ASM_Base+cbuffoffset0))+cbuffoffset1;
+if readInteger(C)==nil then
+C=C-0x100000000;
+end
+return C;
+end
+ registerLuaFunctionHighlight("NHA_CE.CBUFF");
+
+
+--CBUFF From An Offset Name
+function NHA_CE.ASM_CBUFF(INSTRUCTIONNAME,offsetName,distancefromtopofinstruction,cbuffoffset0,cbuffoffset1)
+NHA=getAddress(INSTRUCTIONNAME);
+registerSymbol(offsetName.."::ASM",NHA+distancefromtopofinstruction);
+local DB=NHA_CE.CBUFF(getAddress(offsetName.."::ASM"),0,cbuffoffset0,cbuffoffset1);
+registerSymbol(offsetName.."::BASE",DB);
+NHA_CE.Hook3r.Print("Instruction CBUFF: "..offsetName.."::ASM: "..NHA_CE.HEX.ConvertFromInt64(getAddress(offsetName.."::ASM")).." | "..offsetName.."::BASE: "..NHA_CE.HEX.ConvertFromInt64(getAddress(offsetName.."::BASE")));
+end
+ registerLuaFunctionHighlight("NHA_CE.ASM_CBUFF");
+
+
+
+--Extract The Instructions From An Address (Just Uses The Disassembler And Grabs The End Of The Strings Split By -)
+function NHA_CE.ExtractInstructions(address);
+local DISASM=Disassemble(address);
+local EXTRACTED=NHA_CE.String.RemoveFromEnds2(NHA_CE.String.Split(DISASM, '- ')[3],"]","[");
+return EXTRACTED;end
+ registerLuaFunctionHighlight("NHA_CE.ExtractInstructions");
+
+--Does The Same As Above But Extracts As Bytes
+function NHA_CE.ExtractInstructionsAsBytes(address);
+local DISASM=Disassemble(address);
+local EXTRACTED=NHA_CE.String.RemoveFromEnds2(NHA_CE.String.Split(DISASM, '- ')[2],"]","[");
+return EXTRACTED;end
+ registerLuaFunctionHighlight("NHA_CE.ExtractInstructionsAsBytes");
+
+--Does The Extract Instructions But Grabs The Offset Mentioned Within It
+function NHA_CE.ExtractNegativeFromInstructions(address);
+local EXTRACTED=NHA_CE.String.Split(NHA_CE.ExtractInstructions(address),'-')[2];
+if NHA_CE.String.Contains(EXTRACTED,",") then
+EXTRACTED=NHA_CE.String.Split(EXTRACTED,",")[1];
+end;
+EXTRACTED=NHA_CE.String.RemoveFromEnd(EXTRACTED, "]")
+return EXTRACTED;end
+ registerLuaFunctionHighlight("NHA_CE.ExtractNegativeFromInstructions");
+
+--Does The Extract Instructions But Grabs The Offset Mentioned Within It
+function NHA_CE.ExtractPositiveFromInstructions(address);
+local EXTRACTED=NHA_CE.String.Split(NHA_CE.ExtractInstructions(address),'+')[2];
+if NHA_CE.String.Contains(EXTRACTED,",") then
+EXTRACTED=NHA_CE.String.Split(EXTRACTED,",")[1];
+end;
+EXTRACTED=NHA_CE.String.RemoveFromEnd(EXTRACTED, "]")
+return EXTRACTED;end
+ registerLuaFunctionHighlight("NHA_CE.ExtractPositiveFromInstructions");
+
+--Nop Instructions By Address And Instruction Size
+function NHA_CE.ASM_NOP_Instructions(address);
+local size=#NHA_CE.String.RemoveFromEnds(NHA_CE.ExtractInstructionsAsBytes(address)," ");
+for i=0,size-1,1 do;writeByte(address+i,0x90);end;end
+ registerLuaFunctionHighlight("NHA_CE.ASM_NOP_Instructions");
+
+--traverse from one instruction as a base to another by its aob (good for if u cant get a good size unique aob&gt; get an aob nearby as a base)
+function NHA_CE.InstructionBaseTraverseScan(MODULE,InstructionBaseName,Signature,TravSignature,addresssuffix,addition,reverse,cap)
+if NHA_CE.InstructionBaseScan(MODULE,InstructionBaseName..":Entry",Signature,false) then
+return NHA_CE.TraverseScanForOffsetFromInstruction(
+InstructionBaseName..":Entry"..addresssuffix,
+InstructionBaseName,
+TravSignature,
+addition,
+reverse,
+cap);
+else
+return false;
+end
+end
+ registerLuaFunctionHighlight("NHA_CE.InstructionBaseTraverseScan");
+
+--traverse from one instruction as a base to another by its aob (good for if u cant get a good size unique aob&gt; get an aob nearby as a base)
+function NHA_CE.TraverseScanForOffsetFromInstruction(InstructionBaseName,InstructionOffsetName,TravSignature,addition,reverse,cap)
+local CCC=(#NHA_CE.String.RemoveAllSpaces(TravSignature))/2;
+local ENTRY=GetAddress(InstructionBaseName);
+local POS=ENTRY;
+local i=0;
+local POX="";
+local POX2="";
+local POX3="";
+local Found=false;
+for i=0,cap,1 do
+POX=NHA_CE.HEX.Hex(NHA_CE.HEX.ConvertFromInt64(POS));
+for i=1,CCC-1,1 do;
+POX=POX.." "..NHA_CE.HEX.ConvertFromInt64(ReadByte(POS+i));
+end
+POX2=NHA_CE.HEX.Hex(NHA_CE.HEX.ConvertFromInt64(POS-1));
+for i=1,CCC-1,1 do;
+POX2=POX2.." "..NHA_CE.HEX.ConvertFromInt64(ReadByte(POS-1+i));
+end
+POX3=NHA_CE.HEX.Hex(NHA_CE.HEX.ConvertFromInt64(POS-2));
+for i=1,CCC-1,1 do;
+POX3=POX3.." "..NHA_CE.HEX.ConvertFromInt64(ReadByte(POS-2+i));
+end
+if NHA_CE.String.SigIsRaw_Compare(POX,TravSignature) then
+registerSymbol(InstructionOffsetName,POS);
+Found=true;break;
+end
+if NHA_CE.String.SigIsRaw_Compare(POX2,TravSignature) then
+POS=POS-1;
+registerSymbol(InstructionOffsetName,POS);
+Found=true;break;
+end
+if NHA_CE.String.SigIsRaw_Compare(POX3,TravSignature) then
+POS=POS-2;
+registerSymbol(InstructionOffsetName,POS);
+Found=true;break;
+end
+if reverse then
+POS=POS-addition;
+else
+POS=POS+addition;
+end
+end
+if not Found then
+print(InstructionOffsetName..": Cannot Be Found");
+return false;
+else
+return true;
+end
+end
+ registerLuaFunctionHighlight("NHA_CE.TraverseScanForOffsetFromInstruction");
+
+
+
+
+--[[
+NHA String Functions
+]]
+--String Table
+NHA_CE.String={};
+ registerLuaFunctionHighlight("NHA_CE.String");
+
+--Split A String Into A String Array By A Key (String Or Char)
+function NHA_CE.String.Split(s, Key);resultA = {};for resultB in (s..Key):gmatch("(.-)"..Key) do;table.insert(resultA, resultB);end;return resultA;end
+ registerLuaFunctionHighlight("NHA_CE.String.Split");
+
+--Bool If A String Starts With Text
+function NHA_CE.String.StartsWith(basestring, startstr);
+if startstr==nil then;
+error("startstr Was Null: "..basestring);
+end;
+return basestring:sub(1, #startstr) == startstr;end
+ registerLuaFunctionHighlight("NHA_CE.String.StartsWith");
+
+--Bool If A String Ends With Text
+function NHA_CE.String.EndsWith(basestring, endstr);
+if basestring==nil then
+return basestring;
+end;return endstr == "" or basestring:sub(-#endstr) == endstr;end
+ registerLuaFunctionHighlight("NHA_CE.String.EndsWith");
+
+--Bool If A String Has Text
+function NHA_CE.String.Contains(basestring,findx);
+if findx==nil then
+print(basestring.." Cant Find Nil");
+return false;
+else
+return string.find(basestring, findx);
+end;end
+ registerLuaFunctionHighlight("NHA_CE.String.Contains");
+
+
+
+
+
+--Returns The First Value It Found Or Nil If None Found
+NHA_CE.String.ContainsAny=function(stringIn,Array)
+for Ind=1,#Array,1 do
+local CB=Array[Ind];
+if NHA_CE.String.Contains(stringIn,CB) then
+return CB;
+end
+end
+return nil;
+end
+registerLuaFunctionHighlight("NHA_CE.String.ContainsAny");
+
+
+--Returns The First Value It Found Or Nil If None Found
+NHA_CE.String.StartsWithAny=function(stringIn,Array)
+for Ind=1,#Array,1 do
+local CB=Array[Ind];
+if NHA_CE.String.StartsWith(stringIn,CB) then
+return CB;
+end
+end
+return nil;
+end
+registerLuaFunctionHighlight("NHA_CE.String.StartsWithAny");
+
+
+
+--Remove String From The End Of A String
+function NHA_CE.String.RemoveFromEnd(basestring, find);
+if NHA_CE.String.EndsWith(basestring, find) then;
+return string.sub(basestring, 0, -string.len(find)-1);else;return basestring;end;end
+ registerLuaFunctionHighlight("NHA_CE.String.RemoveFromEnd");
+
+--Remove From The Start Of the String
+function NHA_CE.String.RemoveFromStart(basestring, find);
+if NHA_CE.String.StartsWith(basestring, find) then;
+return string.sub(basestring, string.len(find)-1, string.len(basestring)-1);else;return basestring;end;end
+ registerLuaFunctionHighlight("NHA_CE.String.RemoveFromStart");
+
+--Convert String To Upper
+function NHA_CE.String.ToUpper(basestring);
+return string.upper(basestring);
+end
+ registerLuaFunctionHighlight("NHA_CE.String.ToUpper");
+
+--Convert String To Lower
+function NHA_CE.String.ToLower(basestring);
+if basestring==nil then
+return basestring;
+end
+return string.lower(basestring);
+end
+ registerLuaFunctionHighlight("NHA_CE.String.ToLower");
+
+--Removes String From Ends
+function NHA_CE.String.RemoveFromEnds(basestring, find);
+return NHA_CE.String.RemoveFromEnd(NHA_CE.String.RemoveFromStart(basestring, find), find);
+end
+ registerLuaFunctionHighlight("NHA_CE.String.RemoveFromEnds");
+
+--Remove 2 Strings From The Ends
+function NHA_CE.String.RemoveFromEnds2(basestring, find,find2);
+return NHA_CE.String.RemoveFromEnds(NHA_CE.String.RemoveFromEnds(basestring, find2), find);
+end
+ registerLuaFunctionHighlight("NHA_CE.String.RemoveFromEnds2");
+
+---Replace All Of 'find' With 'replace' In The Base String
+function NHA_CE.String.Replace(basestring,find,replace);
+return string.gsub(basestring,"%"..find, replace)
+end
+ registerLuaFunctionHighlight("NHA_CE.String.Replace");
+
+--Removes All Of 'find' From The Base String
+function NHA_CE.String.Remove(basestring,find);
+return string.gsub(basestring,"%"..find, "")
+end
+ registerLuaFunctionHighlight("NHA_CE.String.Remove");
+
+--Removes All Spaces From The Base String
+function NHA_CE.String.RemoveAllSpaces(basestring);
+return string.gsub(basestring,"%".." ", "")
+end
+ registerLuaFunctionHighlight("NHA_CE.String.RemoveAllSpaces");
+
+---Compare An Aob With A Wild Carded Aob
+function NHA_CE.String.SigIsRaw_Compare(sig,raw)
+for i = 1, #sig do
+local c = sig:sub(i,i)
+local x = raw:sub(i,i)
+if c~="?" and x~="?" and c~=" "and x~=" "  then
+if c~=x then
+return false;
+end
+end
+end
+return true;
+end
+ registerLuaFunctionHighlight("NHA_CE.String.SigIsRaw_Compare");
+
+
+
+
+--[[
+NHAs Hex Functions
+Contains Some Error Correcting!
+]]
+--Hex Table
+NHA_CE.HEX={};
+ registerLuaFunctionHighlight("NHA_CE.HEX");
+
+--Convert String To Bytes
+function NHA_CE.HEX.ConvertStringToBytes(stringin)
+if stringin==nil then
+return nil
+end
+local DBV={};local INDEX=0;
+for p, c in utf8.codes(stringin) do;DBV[INDEX]=c;INDEX=INDEX+1;end
+return DBV;
+end
+ registerLuaFunctionHighlight("NHA_CE.HEX.ConvertStringToBytes");
+
+--Convert String To Hex
+function NHA_CE.HEX.ConvertStringToHex(stringin)
+local DBV="";
+for p, c in utf8.codes(stringin) do;DBV=DBV..NHA_CE.HEX.ConvertFromInt64(c).." ";end
+return NHA_CE.RemoveFromEnd(DBV, " ");
+end
+ registerLuaFunctionHighlight("NHA_CE.HEX.ConvertStringToHex");
+
+--Convert String To Wide Hex
+function NHA_CE.HEX.ConvertStringToWideHex(stringin)
+local DBV="";
+for p, c in utf8.codes(stringin) do;DBV=DBV..NHA_CE.HEX.ConvertFromInt64(c).."00".." ";end
+return NHA_CE.RemoveFromEnd(NHA_CE.RemoveFromEnd(NHA_CE.RemoveFromEnd(DBV, " "),"00"), " ");
+end
+ registerLuaFunctionHighlight("NHA_CE.HEX.ConvertStringToWideHex");
+
+--Convert byte-int64 to Hex String
+function NHA_CE.HEX.ConvertFromInt64(NHA_DB)
+if NHA_DB==nil then;return NHA_DB;end
+if IsNumber(NHA_DB)==false then;return NHA_DB;
+elseif type(NHA_DB)=="number" then
+if NHA_DB==0 then;return "0";end
+local DB= string.format('%X',NHA_DB);
+if #DB &lt;2 then;return "0"..DB;end
+return DB;end;
+--print("DBG: "..type(NHA_DB));
+return NHA_DB;
+end
+
+
+
+ registerLuaFunctionHighlight("NHA_CE.HEX.ConvertFromInt64");
+function IsNumber(value);return tonumber(value) and true or false;end
+ registerLuaFunctionHighlight("IsNumber");
+
+--Convert byte-int64 to Hex String
+function NHA_CE.HEX.GetAddress(NHA_DB)
+return string.format('%X',GetAddress(NHA_DB));
+end
+ registerLuaFunctionHighlight("NHA_CE.HEX.GetAddress");
+
+--Read An Address As A Single Hex Byte
+function NHA_CE.HEX.Hex(ADDRESS)
+NHA_DB=readByte(ADDRESS);
+if NHA_DB==nil then;NHA_DB="00";end
+NHA_DB=NHA_CE.HEX.ConvertFromInt64(NHA_DB);
+if #NHA_DB &gt; 2 then;return "0"..NHA_DB;
+else;return NHA_DB;
+end;end
+ registerLuaFunctionHighlight("NHA_CE.HEX.Hex");
+
+--Read An Address As A Hex AOB
+function NHA_CE.HEX.HexString(ADDRESS,Length);
+NHA_DBI=NHA_CE.HEX.Hex(ADDRESS);
+for i=1,Length-1,1 do;NHA_DBI=NHA_DBI.." "..NHA_CE.HEX.Hex(ADDRESS.."+"..i);end
+return NHA_DBI;
+end
+ registerLuaFunctionHighlight("NHA_CE.HEX.HexString");
+
+
+
+function NHA_CE.ProcessIdFromWindowName(WindowName)
+local CheckProcessInfo=function(WindowInfo,Name)
+for Index, Info in pairs(WindowInfo) do;if NHA_CE.String.StartsWith(Info,Name) then;return true;end;end;
+return false;end
+local Id=nil;
+for ProcessId, WindowInfo in pairs(getWindowlist()) do
+if CheckProcessInfo(WindowInfo,WindowName) then
+Id= ProcessId;
+break;
+end;end
+return Id;
+end
+registerLuaFunctionHighlight("NHA_CE.ProcessIdFromWindowName");
+
+
+
+
+
+--Display The Hooked Process
+function NHA_CE.Hook3r.ShowHookedProcess()
+NHA_CE.Hook3r.Print("Hooking Process "..NHA_CE.RemoveFromEnd(NHA_CE.HOOK, ".exe"),true);
+end
+
+function NHA_CE.Hook3r.ScanFor_Game_Executable_Launch()
+if NHA_CE.ProcessLoadedModule("dxgi.dll") then
+return NHA_CE.DoScanAndCbuff("dxgi.dll",--This Module Is Fun!
+"Game.Executable.Launch"--Instruction Name
+,"48 8D 05 ?? ?? ?? ?? 48 89 44 24 ?? EB 0C 48 8D 05 ?? ?? ?? ?? 48 89 44 24 ?? 48 8B 84 24 ?? ?? ?? ?? 48 8B 4C 24 ?? 48 89 08 EB 12",
+"ExeLaunch",--Offset Name
+0x0,--Offset Distance
+3,7--CBUFF
+,false,--Neg Cbuff
+false--[[Print New Line]]);
+else
+registerSymbol("Game.Executable.Launch",0xFFFFFFFFFFFF);
+registerSymbol("ExeLaunch::ASM",0xFFFFFFFFFFFF);
+registerSymbol("ExeLaunch::BASE",0xFFFFFFFFFFFF);
+end
+end
+
+function NHA_CE.Hook3r.ScanFor_Game_Executable_Path()
+return NHA_CE.DoUniqueScanAndCbuff("Game.Executable.Path"--Instruction Name
+,"48 8D 1D ?? ?? ?? ?? 41 B8 04 01 00 00 48 8B D3 33 C9 E8 ?? ?? ?? 00 48 8B 35 ?? ?? ?? ?? 48 89 1D ?? ?? ?? ?? 48 85 F6 74 05 40 38 3E",
+"ExePath",--Offset Name
+0x0,--Offset Distance
+3,7--CBUFF
+,false,--Neg Cbuff
+false--[[Print New Line]])
+end
+
+function NHA_CE.Hook3r.Find_And_Decypher_Games_XML_And_Get_Launch_Args()
+NHA_CE.Hook3r.Print("Finding Game XML:");--Print Attempt
+local result=AOBScanUnique("3C 49 64 65 6E 74 69 74 79 20 4E 61 6D 65 3D 22");--Check Dynamic Memory For The Games XML
+if result == nil then;--If No Result Is Found
+NHA_CE.Hook3r.Find_LaunchArgs_Via_Instructions();--Call This If No XML
+else;--If A Result Is Found
+
+local Dresult=NHA_CE.HEX.ConvertFromInt64(result);
+registerSymbol("Games_XML",Dresult);
+NHA_CE.Hook3r.Print("Games_XML: "..Dresult);
+
+local IdentityName="Undefined";local IsNextIdentityName=false;
+local LaunchToken="Undefined";local IsNextLaunchIdName=false;
+
+NHA_CE.DoWithArray( NHA_CE.String.Split(readString(result, 1000, false), '"')--[[Split The XML By String Seperator]] ,
+function (DBR)--[[Foreach Splitting]]
+--Identity Name
+if IsNextIdentityName then;IsNextIdentityName=false;IdentityName=DBR;end;
+if IsNextIdentityName==false and NHA_CE.String.Contains(DBR,"Identity Name") then;IsNextIdentityName=true;end;
+
+--Launch Id Name
+if IsNextLaunchIdName then;IsNextLaunchIdName=false;LaunchToken=DBR;end;
+if IsNextLaunchIdName==false and NHA_CE.String.Contains(DBR,"Id=") then;IsNextLaunchIdName=true;end;
+end);
+
+--Split The Found Instructions From The Other Info
+NHA_CE.Hook3r.Print("\nFinding Game Instructions:\n");
+local EXE="";local LaunchCig="";
+if NHA_CE.Hook3r.ScanFor_Game_Executable_Path() then;EXE=readString(GetAddress("ExePath::BASE"), 1000);end;
+if NHA_CE.Hook3r.ScanFor_Game_Executable_Launch() then;LaunchCig=readString(GetAddress("ExeLaunch::BASE"), 1000,true);end;
+--Parse Launch Token From Game_Executable_Launch If Not Found In XML
+if LaunchToken=="Undefined" then;LaunchToken=NHA_CE.String.Split(LaunchCig,"!");LaunchToken=LaunchToken[#LaunchToken];end;
+--Split The Found Instructions From The Other Info
+NHA_CE.Hook3r.Print("~@");
+
+if NHA_CE.String.Contains(IdentityName,".") then
+local Key2=NHA_CE.String.Split(IdentityName,"%.");
+local PackageCompany=Key2[#Key2-1];
+local PackageTitle=NHA_CE.String.RemoveFromEnd(Key2[#Key2], "%");
+local Key=NHA_CE.String.Split(EXE,"\\");
+local DKEY="";
+NHA_CE.DoWithArray(Key,function (SLICE);if NHA_CE.String.Contains( SLICE,PackageCompany) then;DKEY=SLICE;end;end);
+Key=NHA_CE.String.Split(DKEY,"_");
+NHA_CE.Hook3r.OnFind_Decypered_LaunchArgs(PackageCompany,PackageTitle,LaunchToken,Key[#Key],EXE);
+--End Of Good Check
+end;
+end
+end
+
+function NHA_CE.Hook3r.Find_LaunchArgs_Via_Instructions()
+NHA_CE.Hook3r.Print("Games_XML Doesnt Exist!");
+NHA_CE.Hook3r.Print("~@");
+NHA_CE.Hook3r.Print("Finding Game Instructions:");
+NHA_CE.Hook3r.Print("~@");
+local EXE="";local LaunchCig="";
+if NHA_CE.Hook3r.ScanFor_Game_Executable_Path() then;EXE=readString(GetAddress("ExePath::BASE"), 1000);end;
+if NHA_CE.Hook3r.ScanFor_Game_Executable_Launch() then;LaunchCig=readString(GetAddress("ExeLaunch::BASE"), 1000,true);end;
+
+local LTS=NHA_CE.String.Split(LaunchCig,"%.");
+local LCompany=LTS[((#LTS)-1)];LTS=NHA_CE.String.Split(LTS[#LTS],"_");
+local LTitle=LTS[((#LTS)-1)];LTS=NHA_CE.String.Split(LTS[#LTS],"!");
+local LSignature=LTS[((#LTS)-1)];
+local LToken=NHA_CE.String.RemoveFromEnd(LTS[#LTS], "%");
+if LCompany==nil or LTitle==nil or LSignature==nil or LToken==nil then
+NHA_CE.Hook3r.Print("Finding Game Instructions Failed!");
+else
+NHA_CE.Hook3r.OnFind_Decypered_LaunchArgs(LCompany,LTitle,LToken,LSignature,EXE);
+end
+end
+
+function NHA_CE.Hook3r.OnFind_Decypered_LaunchArgs(PackageCompany,PackageTitle,LaunchToken,PackageSignature,EXE)
+NHA_CE.Hook3r.Print("PackageCompany: "..PackageCompany);--Print Identity Name
+NHA_CE.Hook3r.Print("PackageTitle: "..PackageTitle );--Print Identity Name
+NHA_CE.Hook3r.Print("LaunchToken: "..LaunchToken);--Print Launch Id Name
+NHA_CE.Hook3r.Print("PackageSignature: "..PackageSignature);--Print Launch Id Name
+NHA_CE.Hook3r.Print("ExePath: "..EXE);--Print Launch Id Name
+NHA_CE.Hook3r.Print("Launch Via Lua With: ");
+NHA_CE.Hook3r.Print("NHA_CE.OpenGame("..'"'..PackageCompany..'"'..","..'"'..PackageTitle..'"'..","..'"'..PackageSignature..'"'..","..'"'..LaunchToken..'"'..")");--Launch Game
+NHA_CE.Hook3r.Print("~@");--New Line
+end
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+--[[
+
+RTTI FUNCTIONS
+
+]]
+NHA_RTTI={};
+registerLuaFunctionHighlight("NHA_RTTI");
+
+NHA_RTTI.ScanAllowed=false;--Force Stop If Executing The Main Script More Than Once
+registerLuaFunctionHighlight("NHA_RTTI.ScanAllowed");
+NHA_RTTI.ScanCompleted=true;
+registerLuaFunctionHighlight("NHA_RTTI.ScanCompleted");
+NHA_RTTI.ScanList=createStringlist();
+registerLuaFunctionHighlight("NHA_RTTI.ScanList");
+NHA_RTTI.FoundAddresses={};
+registerLuaFunctionHighlight("NHA_RTTI.FoundAddresses");
+NHA_RTTI.FoundInstructionAddresses={};
+registerLuaFunctionHighlight("NHA_RTTI.FoundInstructionAddresses");
+
+NHA_RTTI.AOBs={};-- The Instructions That May Contain Classes (With RTTI Info)
+NHA_RTTI.AOBs[#NHA_RTTI.AOBs+1]="48 8B 0D ?? ?? ?? ??";
+NHA_RTTI.AOBs[#NHA_RTTI.AOBs+1]="48 8D 0D ?? ?? ?? ??";--4C 8D 0D F2FC8204 - lea r9,[????????] { (0) }
+NHA_RTTI.AOBs[#NHA_RTTI.AOBs+1]="48 8B 15 ?? ?? ?? ??";
+registerLuaFunctionHighlight("NHA_RTTI.AOBs");
+
+ NHA_RTTI.SearchFoundAddress=function(LongAddress)
+for Ind=0,#NHA_RTTI.FoundAddresses,1 do
+if NHA_RTTI.FoundAddresses[Ind]==LongAddress then
+return Ind;end;end
+return nil;end
+registerLuaFunctionHighlight("NHA_RTTI.SearchFoundAddress");
+
+ NHA_RTTI.AddFoundAddress=function(LongAddress)
+if NHA_RTTI.SearchFoundAddress(LongAddress)==nil then
+NHA_RTTI.FoundAddresses[#NHA_RTTI.FoundAddresses+1]=LongAddress;
+return true;end;return false;end
+registerLuaFunctionHighlight("NHA_RTTI.AddFoundAddress");
+
+
+
+ NHA_RTTI.SearchFoundInstructionAddresses=function(LongAddress)
+for Ind=0,#NHA_RTTI.FoundInstructionAddresses,1 do
+if NHA_RTTI.FoundInstructionAddresses[Ind]==LongAddress then
+return Ind;end;end
+return nil;end
+registerLuaFunctionHighlight("NHA_RTTI.SearchFoundInstructionAddresses");
+
+ NHA_RTTI.AddFoundInstructionAddresses=function(LongAddress)
+if NHA_RTTI.SearchFoundInstructionAddresses(LongAddress)==nil then
+NHA_RTTI.FoundInstructionAddresses[#NHA_RTTI.FoundInstructionAddresses+1]=LongAddress;
+return true;end;return false;end
+registerLuaFunctionHighlight("NHA_RTTI.AddFoundInstructionAddresses");
+
+NHA_RTTI.SetLuaEngineTitle=function(text)
+getLuaEngine().setCaption(text);
+end
+registerLuaFunctionHighlight("NHA_RTTI.SetLuaEngineTitle");
+NHA_RTTI.SetLuaEngineTitle("dr NHA Is A Boss | Lua Engine!");
+
+
+
+NHA_RTTI.MODULEBASE=0;
+registerLuaFunctionHighlight("NHA_RTTI.MODULEBASE");
+NHA_RTTI.MODULEBASESIZE=0;
+registerLuaFunctionHighlight("NHA_RTTI.MODULEBASESIZE");
+
+
+ NHA_RTTI._Basic_Dumper_=function(SCANNERNAME,MaxBaseOffset,SortFunction)
+ if NHA_CE.HOOK=="" then;
+ print("Please Assign NHA_CE.HOOK To The Process Name!");
+ else
+if NHA_RTTI.ScanCompleted==true then
+NHA_RTTI.ScanCompleted=false;
+NHA_RTTI.ScanAllowed=true;--Allow This Scan!
+CreateThread(function(Thread);
+--CLEAR
+NHA_RTTI.FoundAddresses={};
+NHA_RTTI.FoundInstructionAddresses={};
+NHA_RTTI.ScanList.clear();
+Thread.Name=SCANNERNAME.."::RTTI_SCANNER";
+NHA_CE.Hook3r.ClearLogs();
+local Results=createStringlist();
+NHA_RTTI.SetLuaEngineTitle(SCANNERNAME..": Finding Instructions");
+print(SCANNERNAME..": Finding Instructions");
+
+NHA_RTTI.MODULEBASE=GetAddress(NHA_CE.HOOK);
+NHA_RTTI.MODULEBASESIZE=NHA_RTTI.MODULEBASE+getModuleSize(NHA_CE.HOOK);
+
+--Do Aob Scans
+for indx=0,#NHA_RTTI.AOBs,1 do;
+if NHA_RTTI.ScanAllowed==false then;break;end
+if NHA_RTTI.AOBs[indx]~=nil then
+print(SCANNERNAME..": Finding Instruction: "..NHA_RTTI.AOBs[indx]);
+NHA_RTTI.SetLuaEngineTitle(SCANNERNAME..": Finding Instruction: "..indx);
+local C=AOBScan(NHA_RTTI.AOBs[indx], "*X*C*W");
+if C==nil then;break;end
+for I=0,C.Count-1,1 do;local ADDRESSX=getAddress(C[I]);if ADDRESSX&gt;=NHA_RTTI.MODULEBASE and ADDRESSX&lt;=NHA_RTTI.MODULEBASESIZE then;Results.add(C[I]);end;end
+print(SCANNERNAME..": Finished Finding Instruction: "..NHA_RTTI.AOBs[indx].." &gt; Results: "..C.Count-1);
+NHA_RTTI.SetLuaEngineTitle(SCANNERNAME..": Finished Finding Instruction: "..indx.." &gt; Results: "..C.Count-1);
+end;end
+if NHA_RTTI.ScanAllowed then
+--After Aob Scans
+local COUNT=Results.Count-1;
+print(SCANNERNAME..": Found Instructions: "..COUNT.." Now Sorting Instructions!");
+NHA_RTTI.SetLuaEngineTitle(SCANNERNAME..": Found Instructions: "..COUNT.." Now Sorting Instructions!");
+--Sort Function
+SortFunction(SCANNERNAME,Results,NHA_RTTI.ScanList,MaxBaseOffset);
+end
+if NHA_RTTI.ScanAllowed then--Only Allow Writing If Scanning Is Still Allowed
+local BASE_DIRECTORY="C:\\"..NHA_CE.HOOK;
+local FILE_DIRECTORY=BASE_DIRECTORY.."\\NHA_"..NHA_CE.String.Replace(SCANNERNAME," ","_").."_Output.txt";
+NHA_CE.DirectoryCreate(BASE_DIRECTORY);
+NHA_CE.FileDelete(FILE_DIRECTORY);
+NHA_RTTI.ScanList.saveToFile(FILE_DIRECTORY);
+print(SCANNERNAME..": Completed SORTED Instructions: "..#NHA_RTTI.FoundAddresses);
+NHA_RTTI.SetLuaEngineTitle(SCANNERNAME..": Completed SORTED Instructions: "..#NHA_RTTI.FoundAddresses);
+shellExecute(FILE_DIRECTORY);
+else
+print(SCANNERNAME..': Stopped As "ScanAllowed" Is False!');
+end
+NHA_RTTI.ScanAllowed=false;--Disallow Any Pre Existing Scans
+NHA_RTTI.ScanCompleted=true;
+sleep(500);
+NHA_RTTI.SetLuaEngineTitle("dr NHA Is A Boss | Lua Engine!");
+end);
+end;end
+end;
+registerLuaFunctionHighlight("NHA_RTTI._Basic_Dumper_");
+
+NHA_RTTI.BASE_VALID_CLASS_CHECK=function(CLASS);
+if NHA_CE.HOOK=="GTA5.exe" then
+return CLASS~="rage::parStructure"and
+CLASS~="rage::grcRenderTargetDX11"and
+CLASS~="rage::grcTextureDX11"and
+CLASS~="rage::SoftRasterizer"and
+CLASS~="rage::grcVertexBufferD3D11"
+end
+return true;
+end
+
+registerLuaFunctionHighlight("NHA_RTTI.BASE_VALID_CLASS_CHECK");
+
+
+NHA_RTTI.BaseAddressDumper=function()
+NHA_RTTI._Basic_Dumper_("RTTI Base Scanner",0x8*3,function(SCANNERNAME,Results,RTTI_ScanList,INDEX_CAP)
+local CAPPING=Results.Count-1;
+local RFS_=CAPPING/--[[Times You Want To Refresh Between Results(Lower Is Faster)]]300;
+local RFS=RFS_+1;
+for Ind=0,CAPPING,1 do
+if RFS&gt;RFS_ then
+NHA_RTTI.SetLuaEngineTitle(SCANNERNAME..": SortInstructions: "..Ind.."/"..CAPPING);
+RFS=0;else;RFS=RFS+1;end
+
+if NHA_RTTI.ScanAllowed==false then;break;end
+for POINTER_INDEX=0,INDEX_CAP,0x8 do
+if NHA_RTTI.ScanAllowed==false then;break;end
+local ADDRESS=NHA_CE.CBUFF(getAddress( Results[Ind]),0,3,7)+getAddress( POINTER_INDEX);
+local POINTER=readPointer(ADDRESS);
+local F=false;
+if not inModule(POINTER) and inModule(ADDRESS) then
+local CLASS=getRTTIClassName(POINTER);
+if CLASS~=nil then
+if NHA_RTTI.BASE_VALID_CLASS_CHECK(CLASS) then
+if NHA_RTTI.AddFoundAddress(ADDRESS) and NHA_RTTI.AddFoundInstructionAddresses(POINTER) then
+RTTI_ScanList.add(
+NHA_CE.HEX.ConvertFromInt64(ADDRESS).."+"..
+NHA_CE.HEX.ConvertFromInt64(POINTER_INDEX).." &gt; "..
+NHA_CE.HEX.ConvertFromInt64(POINTER).." &gt; "..
+CLASS
+);F=true;
+end;end;end
+end;
+
+if F==false and POINTER~=nil then
+POINTER=readPointer(POINTER);
+if not inModule(POINTER) and inModule(ADDRESS) then
+local CLASS=getRTTIClassName(POINTER);
+if CLASS~=nil then
+if NHA_RTTI.BASE_VALID_CLASS_CHECK(CLASS) then
+if NHA_RTTI.AddFoundAddress(ADDRESS) and NHA_RTTI.AddFoundInstructionAddresses(POINTER) then
+RTTI_ScanList.add("["..NHA_CE.HEX.ConvertFromInt64(ADDRESS).."+0]+"..
+NHA_CE.HEX.ConvertFromInt64(POINTER_INDEX).." &gt; "..
+NHA_CE.HEX.ConvertFromInt64(POINTER).." &gt; "..
+CLASS
+);
+end;end;end
+end;
+end
+
+end
+end
+end);
+end;
+registerLuaFunctionHighlight("NHA_RTTI.BaseAddressDumper");
+
+
+
+
+
+
+NHA_RTTI.BaseToPathDumper=function(MaxDepth)
+NHA_RTTI._Basic_Dumper_("RTTI Base To Path Scanner MaxDepth"..MaxDepth,0x8*3,function(SCANNERNAME,Results,RTTI_ScanList,INDEX_CAP)
+
+local CAPPING=Results.Count-1;
+local RFS_=CAPPING/--[[Times You Want To Refresh Between Results(Lower Is Faster)]]300;
+local RFS=RFS_+1;
+
+function ARRAY_ADD(POINTER,OFFSET,XADDRESS,CLASS,Size, MaxDepth)
+if NHA_CE.HEX~=nil then;
+RTTI_ScanList.add(NHA_CE.HEX.ConvertFromInt64(POINTER).."+0x"..NHA_CE.HEX.ConvertFromInt64(OFFSET).." &gt; "..NHA_CE.HEX.ConvertFromInt64(XADDRESS).." &gt; "..CLASS);
+if MaxDepth&gt; 0 then;
+for OFFSET=0,Size,0x8 do
+if NHA_RTTI.ScanAllowed==false then;break;end
+local ADDRESS=readPointer(getAddress(XADDRESS)+OFFSET);
+if ADDRESS~=nil then
+local CLASS=getRTTIClassName(ADDRESS);
+if CLASS~=nil then;
+ARRAY_ADD(XADDRESS,OFFSET,ADDRESS,CLASS,Size,MaxDepth-1);
+end
+end;end;
+end
+end
+end;
+
+for Ind=0,CAPPING,1 do
+if RFS&gt;RFS_ then
+NHA_RTTI.SetLuaEngineTitle(SCANNERNAME..": SortInstructions: "..Ind.."/"..CAPPING);
+RFS=0;else;RFS=RFS+1;end
+
+if NHA_RTTI.ScanAllowed==false then;break;end
+for POINTER_INDEX=0,INDEX_CAP,0x8 do
+if NHA_RTTI.ScanAllowed==false then;break;end
+
+local ADDRESS=NHA_CE.CBUFF(getAddress( Results[Ind]),0,3,7)+getAddress( POINTER_INDEX);
+local POINTER=readPointer(ADDRESS);
+local F=false;
+
+if not inModule(POINTER) and inModule(ADDRESS) then
+local CLASS=getRTTIClassName(POINTER);
+if CLASS~=nil then;
+if NHA_RTTI.BASE_VALID_CLASS_CHECK(CLASS) then
+if NHA_RTTI.AddFoundAddress(ADDRESS) and NHA_RTTI.AddFoundInstructionAddresses(POINTER) then
+ARRAY_ADD(ADDRESS,POINTER_INDEX,POINTER,CLASS,0x200,MaxDepth);
+F=true;
+end;end;end
+end;
+
+
+if F==false and POINTER~=nil then
+POINTER=readPointer(POINTER);
+if not inModule(POINTER) and inModule(ADDRESS) then
+local CLASS=getRTTIClassName(POINTER);
+if CLASS~=nil then;
+if NHA_RTTI.BASE_VALID_CLASS_CHECK(CLASS) then
+if NHA_RTTI.AddFoundAddress(ADDRESS) and NHA_RTTI.AddFoundInstructionAddresses(POINTER) then
+ARRAY_ADD(ADDRESS,POINTER_INDEX,POINTER,CLASS,0x200,MaxDepth);
+end;end;end
+end;
+end
+
+end
+end
+
+
+
+end);
+end;
+registerLuaFunctionHighlight("NHA_RTTI.BaseToPathDumper");
+
+
+
+
+
+
+
+
+
+
+</LuaScript>
+</CheatTable>
