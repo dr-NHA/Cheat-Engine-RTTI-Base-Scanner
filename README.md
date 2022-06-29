@@ -21,11 +21,15 @@ Base Address     > Pointed Class > Class Name
 
 ## How TO:
 Simply Attach To A Process, 
+
 Click Setup Process As Hook,
+
 Click RTTI Base Dumper Inside NHA RTTI Dumper's To Dump All Bases!
+
 
 ## MS Launch Dumper 
 (Find_And_Decypher_Games_XML_And_Get_Launch_Args)
+
 This Is Useful For Microsoft Store And Xbox Games As You Can Get The Launch Args Needed For Opening The Game,
 Same Stuff Shortcuts Use :) 
 
