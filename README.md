@@ -10,8 +10,11 @@ This Means Your Base Most Likely Has A Reference Within The Assembly Code So You
 
 ## Dump Output:
 Base Address     > Pointed Class > Class Name
+
 0x7FF795361260+0 > 0x2610725BBA0 > CDrawCommandBuffer
+
 0x7FF7943FDF90+0 > 0x26108C489F0 > CutSceneManager
+
 
 ## Preview
 ![image](https://user-images.githubusercontent.com/56168811/176342151-02d8a93e-fccd-459e-be0e-d1615ab7d69f.png)
