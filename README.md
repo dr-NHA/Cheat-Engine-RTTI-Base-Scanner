@@ -19,7 +19,7 @@ Base Address     > Pointed Class > Class Name
 
 
 ## Preview
-![image](https://user-images.githubusercontent.com/56168811/176342151-02d8a93e-fccd-459e-be0e-d1615ab7d69f.png)
+![image](https://user-images.githubusercontent.com/56168811/204425009-1ec99d8e-5610-4109-aec0-d4a59c7c9f78.png)
 
 ## How TO:
 Simply Attach To A Process, 
