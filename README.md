@@ -1,6 +1,8 @@
 # Cheat-Engine-RTTI-Base-Scanner
 With MS Game Launch Dumper
 
+## NEW: Enum Dumper!!!!!
+
 ## Join The [NHA GTA Discord](https://discord.gg/3EQvmNMr2c)!
 
 ## Scan For Base Addresses Using RTTI To Log The Base Name!
