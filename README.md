@@ -10,12 +10,12 @@ With MS Game Launch Dumper
 ## Scan's Are Done Via Simple Aob Scans Then Filtering Through The Instructions
 This Means Your Base Most Likely Has A Reference Within The Assembly Code So You Can Make A Unique AOB
 
-## Dump Output:
-Base Address     > Pointed Class > Class Name
+## (BASE) Dump Output:
+Instruction    >  Base Address     > Pointed Class > Class Name
 
-0x7FF795361260+0 > 0x2610725BBA0 > CDrawCommandBuffer
+0xFFFFFFFFFFFF > 0x7FF795361260+0 > 0x2610725BBA0 > CDrawCommandBuffer
 
-0x7FF7943FDF90+0 > 0x26108C489F0 > CutSceneManager
+0xFFFFFFFFFFFF > 0x7FF7943FDF90+0 > 0x26108C489F0 > CutSceneManager
 
 
 ## Preview
